@@ -18,5 +18,8 @@ public class Product {
         this(upc, "", quantity);
     }
 
-
+    @Override
+    public String toString() {
+        return "Product: UPC: " + upc + " SKU: " + sku + " Quantity: " + quantity;
+    }
 }

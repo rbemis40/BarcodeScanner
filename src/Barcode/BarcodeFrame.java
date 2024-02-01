@@ -11,7 +11,7 @@ import java.awt.event.FocusEvent;
 import java.util.LinkedList;
 import java.util.Locale;
 
-public class Barcode {
+public class BarcodeFrame {
     private JPanel upcPanel;
     private JTextField upcField;
     private JButton submitUPCButton;
@@ -21,7 +21,7 @@ public class Barcode {
     private JTextField quantityField;
     private LinkedList<Product> products; // Stores all the newly scanned products
 
-    public Barcode() {
+    public BarcodeFrame() throws Exception {
         products = new LinkedList<Product>();
 
         $$$setupUI$$$();
@@ -64,6 +64,21 @@ public class Barcode {
                 }
             }
         });
+
+        createFrame();
+    }
+
+    private void createFrame() throws Exception {
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+
+        JFrame frame = new JFrame("Ecomdash Barcode Scanner");
+        frame.setMinimumSize(new Dimension(1366, 768));
+        frame.setContentPane(upcPanel);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+
+        frame.pack();
+        frame.setVisible(true);
     }
 
     private void upcEntered() {
@@ -100,19 +115,6 @@ public class Barcode {
             quantityField.setText("1");
         }
 
-    }
-
-    public static void main(String[] args) throws Exception {
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-
-        JFrame frame = new JFrame("Ecomdash Barcode Scanner");
-        frame.setMinimumSize(new Dimension(1366, 768));
-        frame.setContentPane(new Barcode().upcPanel);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLocationRelativeTo(null);
-
-        frame.pack();
-        frame.setVisible(true);
     }
 
     /**
