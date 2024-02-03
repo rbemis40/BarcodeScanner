@@ -9,8 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
 
 public class BarcodeFrame {
@@ -27,11 +25,17 @@ public class BarcodeFrame {
     private JPanel pastUpcs;
     private JPanel invPanel;
 
-    private ProductManager prodManager;
+    private final Color color1;
+    private final Color color2;
+
+    private final ProductManager prodManager;
     private final int PROD_FONT_SIZE = 24;
 
     public BarcodeFrame(ProductManager prodManager) throws Exception {
         this.prodManager = prodManager;
+
+        color1 = new Color(255, 255, 255);
+        color2 = new Color(200, 200, 200);
 
         $$$setupUI$$$();
 
@@ -117,22 +121,33 @@ public class BarcodeFrame {
             } catch (ProductList.ProductNotFoundException e) {
                 // The UPC is not already known, and needs a custom SKU
                 // TODO: Update font size by passing a JLabel instead
-                // TODO: Ensure that the user actually enters a value
-                scannedProd.sku = (String) JOptionPane.showInputDialog(frame, "UPC not on file, enter new SKU:", "Enter new SKU", JOptionPane.PLAIN_MESSAGE, null, null, "");
+                Object newSku = JOptionPane.showInputDialog(frame, "UPC not on file, enter new SKU:", "Enter new SKU", JOptionPane.PLAIN_MESSAGE, null, null, "");
+                if (newSku == null) {
+                    return; // The user did not enter a sku, so cancel
+                }
+                scannedProd.sku = (String) newSku;
                 prodManager.addReferenceProduct(scannedProd);
             }
 
             prodManager.addScannedProduct(scannedProd);
 
-            final String labelStr = String.format("%-3dx  %-13d - %s", scannedProd.quantity, scannedProd.upc, scannedProd.sku);
+            final String labelStr = createLabelStr(scannedProd.quantity, scannedProd.upc, scannedProd.sku);
 
             // Update the UI
             JLabel newUPC = new JLabel(labelStr);
             // newUPC.setFont(upcField.getFont());
             newUPC.setFont(new Font("Monospaced", Font.PLAIN, PROD_FONT_SIZE));
+
+            // Set background based off odd or even to make it easier to read
+            newUPC.setOpaque(true);
+
+            if (prodManager.getScannedProdSize() % 2 == 0) newUPC.setBackground(color1);
+            else newUPC.setBackground(color2);
+
             pastUpcs.add(newUPC);
             pastUpcs.revalidate();
         } catch (NumberFormatException e) {
+            // TODO: Show an error message
             System.out.println("Invalid Barcode Scanned");
         } finally {
             upcField.setText("");
@@ -143,17 +158,28 @@ public class BarcodeFrame {
 
     public void updateInventoryPanel() {
         ProductList inv = prodManager.getFileProducts();
+        int prodI = 0;
         for (Product curProd : inv) {
-            final String labelStr = String.format("%-3dx  %-13d - %s", curProd.quantity, curProd.upc, curProd.sku); // TODO: Extract this into a simple function
+            final String labelStr = createLabelStr(curProd.quantity, curProd.upc, curProd.sku);
 
             JLabel invLabel = new JLabel();
             invLabel.setFont(new Font("Monospaced", Font.PLAIN, PROD_FONT_SIZE));
             invLabel.setText(labelStr);
 
+            if (prodI % 2 == 1) invLabel.setBackground(color1);
+            else invLabel.setBackground(color2);
+
+            invLabel.setOpaque(true);
+
             invPanel.add(invLabel);
+            prodI++;
         }
 
         invPanel.revalidate();
+    }
+
+    private String createLabelStr(int quantity, long upc, String sku) {
+        return String.format("%-3dx  %-13d - %s", quantity, upc, sku);
     }
 
     private void createUIComponents() {

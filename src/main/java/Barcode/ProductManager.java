@@ -28,6 +28,10 @@ public class ProductManager {
         prod.sku = fileProducts.upcToSku(prod.upc);
     }
 
+    public int getScannedProdSize() {
+        return scannedProducts.size();
+    }
+
     public ProductList getFileProducts() {
         return new ProductList(fileProducts);
     }
