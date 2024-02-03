@@ -1,28 +1,43 @@
 package Barcode;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 
 public class ProductReader {
     private final FileReader fr;
     private final BufferedReader br;
-    private String filename;
+    private final String[] headerNames;
 
-    public ProductReader(String prodFile) throws FileNotFoundException {
-        filename = prodFile;
+    public ProductReader(String prodFileName) throws IOException {
+        headerNames = new String[]{"UPC", "SKU", "Quantity"};
+
+        File prodFile = new File(prodFileName);
+        boolean didCreate = prodFile.createNewFile(); // Ensure that the file exists
+        if (didCreate) { // The file was just created, so needs to be populated with the correct header
+            FileWriter fw = new FileWriter(prodFile);
+
+            for (int i = 0; i < headerNames.length - 1; i++) {
+                // TODO: Write the header to the file
+                String writeStr = headerNames[i] + ",";
+                fw.write(writeStr);
+            }
+
+            if (headerNames.length > 0) { // Write the last piece of the header without a comma if it exists
+                fw.write(headerNames[headerNames.length - 1]);
+            }
+
+            fw.close();
+        }
 
         fr = new FileReader(prodFile);
         br = new BufferedReader(fr);
     }
 
-    public ArrayList<Product> readProducts() throws IOException {
-        ArrayList<Product> fileProducts = new ArrayList<>();
+    public ProductList readProducts() throws IOException {
+        ProductList fileProducts = new ProductList();
 
         String curLine = br.readLine();
-        if (!checkFirstLine(curLine)) {
+        if (!checkHeader(curLine)) {
             throw new IOException("Invalid Product File");
         }
 
@@ -42,9 +57,19 @@ public class ProductReader {
     }
 
     // Checks that the first line has the correct column names
-    private boolean checkFirstLine(String firstLine) {
+    private boolean checkHeader(String firstLine) {
         String[] colNames = firstLine.split(",");
-        return colNames.length == 3 && colNames[0].equals("UPC") && colNames[1].equals("SKU") && colNames[2].equals("Quantity");
+        if (colNames.length != headerNames.length) {
+            return false;
+        }
+
+        for (int i = 0; i < headerNames.length; i++) {
+            if (!colNames[i].equals(headerNames[i])) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private Product parseLine(String line) throws IOException {

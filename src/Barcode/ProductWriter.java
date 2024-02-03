@@ -1,2 +1,8 @@
-package Barcode;public class ProductWriter {
+package Barcode;
+
+public class ProductWriter {
+
+    public ProductWriter(String prodFileName) {
+
+    }
 }
